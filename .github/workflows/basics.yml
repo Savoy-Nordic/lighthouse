@@ -3,12 +3,12 @@
 # and it should complete quickly, giving more immediate feedback
 # than waiting for Travis
 
-name: basics
+name: 🧱
 
 on: [push]
 
 jobs:
-  build:
+  basics:
 
     runs-on: ubuntu-latest
 
