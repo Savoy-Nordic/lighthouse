@@ -1,0 +1,42 @@
+# The Travis CI is our full-fledged UI, but this Github workflow
+# runs some basics (build, lint, diff sample json and unit-core)
+# and it should complete quickly, giving more immediate feedback
+# than waiting for Travis
+
+name: basics
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+   # Cache yarn deps. thx https://github.com/actions/cache/blob/master/examples.md#node---yarn
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - uses: actions/cache@v1
+      id: yarn-cache
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - run: yarn --frozen-lockfile
+    - run: yarn build-all
+    - run: yarn diff:sample-json
+    - run: yarn lint
+    - run: yarn unit-core
